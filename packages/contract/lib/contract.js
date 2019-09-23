@@ -16,13 +16,15 @@ if (typeof Web3 === "object" && Object.keys(Web3).length === 0) {
 
 (function(module) {
   // Accepts a contract object created with web3.eth.Contract or an address.
-  function Contract(contract) {
-    var instance = this;
-    var constructor = instance.constructor;
+  function Contract(contract, options = {}) {
+    const instance = this;
+    const constructor = instance.constructor;
+    const { network_id } = options;
+    const networkData = constructor._json.networks[network_id];
 
     // Disambiguate between .at() and .new()
     if (typeof contract === "string") {
-      var web3Instance = new constructor.web3.eth.Contract(constructor.abi);
+      const web3Instance = new constructor.web3.eth.Contract(constructor.abi);
       web3Instance.options.address = contract;
       contract = web3Instance;
     }
@@ -31,7 +33,9 @@ if (typeof Web3 === "object" && Object.keys(Web3).length === 0) {
     instance.methods = {};
     instance.abi = constructor.abi;
     instance.address = contract.options.address;
-    instance.transactionHash = contract.transactionHash;
+    instance.transactionHash = networkData
+      ? network.transactionHash
+      : contract.transactionHash;
     instance.contract = contract;
 
     // User defined methods, overloaded methods, events

@@ -48,7 +48,7 @@ module.exports = Contract => ({
       await this.detectNetwork();
       const onChainCode = await this.web3.eth.getCode(address);
       await utils.checkCode(onChainCode, this.contractName, address);
-      return new this(address);
+      return new this(address, { network_id: this.network_id });
     } catch (error) {
       throw error;
     }
@@ -60,7 +60,7 @@ module.exports = Contract => ({
       await this.detectNetwork();
       utils.checkNetworkArtifactMatch(this);
       utils.checkDeployment(this);
-      return new this(this.address);
+      return new this(this.address, { network_id: this.network_id });
     } catch (error) {
       throw error;
     }
