@@ -18,6 +18,7 @@ describe("CompilerSupplier", function() {
     let oldPragmaFloatSource; // ^0.4.15
     let version4PragmaSource; // ^0.4.21
     let version5PragmaSource; // ^0.5.0
+    let compileConfig;
 
     const options = {
       contracts_directory: "",
@@ -65,8 +66,9 @@ describe("CompilerSupplier", function() {
           settings: {}
         }
       };
+      const config = new Config().with(options);
 
-      const { contracts } = await compile(oldPragmaPinSource, options);
+      const { contracts } = await compile(oldPragmaPinSource, config);
       const OldPragmaPin = findOne("OldPragmaPin", contracts);
 
       assert(OldPragmaPin.contractName === "OldPragmaPin");
@@ -82,7 +84,8 @@ describe("CompilerSupplier", function() {
         }
       };
 
-      const { contracts } = await compile(oldPragmaFloatSource, options);
+      const config = Config.default().merge(options);
+      const { contracts } = await compile(oldPragmaFloatSource, config);
       const OldPragmaFloat = findOne("OldPragmaFloat", contracts);
 
       assert(OldPragmaFloat.contractName === "OldPragmaFloat");
@@ -127,9 +130,7 @@ describe("CompilerSupplier", function() {
       if (await fse.exists(expectedCache)) await fse.unlink(expectedCache);
 
       options.compilers = {
-        solc: {
-          version: "0.4.21"
-        }
+        solc: { version: "0.4.21" }
       };
 
       const cachedOptions = Config.default().merge(options);
@@ -233,6 +234,7 @@ describe("CompilerSupplier", function() {
         };
 
         options.resolver = new Resolver(options);
+        options = Config.default().merge(options);
 
         const { contracts } = await compile.with_dependencies(options);
         const ComplexOrdered = findOne("ComplexOrdered", contracts);
@@ -252,10 +254,11 @@ describe("CompilerSupplier", function() {
             settings: {}
           }
         };
+        compileConfig = Config.default().merge(options);
 
         let error;
         try {
-          await compile(version4PragmaSource, options);
+          await compile(version4PragmaSource, compileConfig);
         } catch (err) {
           error = err;
         }
@@ -274,10 +277,11 @@ describe("CompilerSupplier", function() {
             settings: {}
           }
         };
+        compileConfig = Config.default().merge(options);
 
         let error;
         try {
-          await compile(version4PragmaSource, options);
+          await compile(version4PragmaSource, compileConfig);
         } catch (err) {
           error = err;
         }
