@@ -28,6 +28,7 @@
     "prepare": "yarn build",
     "build": "./bin/build",
     "start": "ts-node-dev -r tsconfig-paths/register ./bin/server",
+    "start:amal": "ts-node-dev -r tsconfig-paths/register ./bin/server ~/work/test-dapps",
     "test": "jest --verbose --detectOpenHandles"
   },
   "bugs": {
