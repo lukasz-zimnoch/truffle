@@ -1,8 +1,9 @@
 import PouchDB from "pouchdb";
 import PouchDBMemoryAdapter from "pouchdb-adapter-memory";
 import PouchDBFind from "pouchdb-find";
-
+import pouchdbDebug from "pouchdb-debug"
 import { soliditySha3 } from "web3-utils";
+import jsonStableStringify from 'json-stable-stringify';
 
 type PouchApi = {
   sources?: PouchDB.Database,
@@ -13,7 +14,8 @@ type PouchApi = {
   networks?: PouchDB.Database
 }
 
-const jsonStableStringify = require('json-stable-stringify');
+type TDBResource = keyof PouchApi
+
 
 const resources = {
   contracts: {
@@ -53,11 +55,15 @@ export class Workspace {
 
   constructor () {
     this.dbApi = {}
+    PouchDB.plugin(pouchdbDebug);
+    PouchDB.debug.enable('pouchdb:api')
+
     PouchDB.plugin(PouchDBMemoryAdapter);
     PouchDB.plugin(PouchDBFind);
 
     for (let resource of Object.keys(resources)) {
       this.dbApi[resource] = new PouchDB(resource, { adapter: "memory" });
+      this[resource] = function() { return this.fetchAll(resource) }
     }
 
     this.ready = this.initialize();
@@ -140,12 +146,29 @@ export class Workspace {
     try {
       return  {
         ... await this.dbApi.compilations.get(id),
-
         id
       };
 
     } catch (_) {
       return null;
+    }
+  }
+
+  async fetchAll(res: TDBResource) {
+    await this.ready;
+
+    try {
+      const query = { selector: {} }
+      const { docs } : any = await this.dbApi[res].find(query);
+
+      // Todo: this can probably be fixed by ensuring `id` is stored
+      // as well as `_id` on add side... but is it worth it?
+      //
+      return docs.map(doc => ({...doc, id: doc['id'] || doc['_id']}));
+    } catch (error) {
+      console.log(`Error fetching all ${res}\n`)
+      console.log(error)
+      return []
     }
   }
 
@@ -169,8 +192,6 @@ export class Workspace {
           await this.dbApi.compilations.put({
             ...compilation,
             ...compilationInput,
-
-
             _id: id
           });
 
@@ -261,7 +282,7 @@ export class Workspace {
           if(network) {
             return network;
           } else {
-            const networkAdded = await this.dbApi.networks.put({
+            await this.dbApi.networks.put({
               ...networkInput,
               _id: id
             });
@@ -290,7 +311,7 @@ export class Workspace {
   async sourcesAdd ({ input }) {
     await this.ready;
 
-    const { sources } = input;
+    const { sources } = input
 
     return {
       sources: Promise.all(sources.map(
