@@ -28,6 +28,8 @@ export interface AstNode {
   //that's intended for functions but this could be other
   //things
   stateMutability?: Mutability;
+  kind?: string;
+  hexValue?: string;
   referencedDeclaration?: any;
   parameters?: {
     parameters: AstNode[];
@@ -41,13 +43,17 @@ export interface AstNode {
   returnParameterTypes?: {
     parameters: AstNode[];
   };
+  baseType?: AstNode;
   keyType?: AstNode;
   valueType?: AstNode;
+  payable?: boolean;
   indexed?: boolean;
   anonymous?: boolean;
   contractKind?: ContractKind;
   isConstructor?: boolean;
-  [k: string]: any;
+  //Note: May need to add more in the future.
+  //May also want to create a proper system of AstNode types
+  //in the future, but sticking with this for now.
 }
 
 export interface AstNodes {
