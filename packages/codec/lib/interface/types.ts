@@ -14,7 +14,7 @@ export interface ContractState {
   code: string;
 }
 
-export interface DecodedVariable {
+export interface StateVariable {
   name: string;
   class: Types.ContractType;
   value: Values.Result;
