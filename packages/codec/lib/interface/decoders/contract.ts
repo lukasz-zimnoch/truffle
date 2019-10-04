@@ -4,7 +4,7 @@ const debug = debugModule("codec:interface:decoders:contract");
 import * as CodecUtils from "@truffle/codec/utils";
 import { wrapElementaryViaDefinition, Definition as DefinitionUtils, AbiUtils, EVM, ContextUtils } from "@truffle/codec/utils";
 import * as Utils from "@truffle/codec/utils/interface";
-import * as Storage from "@truffle/codec/storage/types";
+import * as Storage from "@truffle/codec/storage";
 import * as Ast from "@truffle/codec/ast/types";
 import * as Contexts from "@truffle/codec/contexts/types";
 import * as Pointer from "@truffle/codec/pointer/types";
@@ -21,7 +21,6 @@ import { BlockType, Transaction } from "web3/eth/types";
 import { Log } from "web3/types";
 import { getStorageAllocations, storageSize } from "@truffle/codec/allocate/storage";
 import { decodeVariable } from "@truffle/codec/core/decoding";
-import { isWordsLength, equalSlots } from "@truffle/codec/utils/storage";
 import { ContractBeingDecodedHasNoNodeError, ContractAllocationFailedError } from "@truffle/codec/interface/errors";
 
 export default class ContractDecoder {
@@ -161,7 +160,7 @@ export class ContractInstanceDecoder {
 
   private stateVariableReferences: Allocation.StorageMemberAllocation[];
 
-  private mappingKeys: Storage.Slot[] = [];
+  private mappingKeys: Storage.Types.Slot[] = [];
 
   private storageCache: DecoderTypes.StorageCache = {};
 
@@ -387,12 +386,12 @@ export class ContractInstanceDecoder {
   //see the comment on constructSlot for more detail on what forms are accepted
   public watchMappingKey(variable: number | string, ...indices: any[]): void {
     this.checkAllocationSuccess();
-    let slot: Storage.Slot | undefined = this.constructSlot(variable, ...indices)[0];
+    let slot: Storage.Types.Slot | undefined = this.constructSlot(variable, ...indices)[0];
     //add mapping key and all ancestors
     debug("slot: %O", slot);
     while(slot !== undefined &&
       this.mappingKeys.every(existingSlot =>
-      !equalSlots(existingSlot,slot)
+      !Storage.Utils.equalSlots(existingSlot,slot)
         //we put the newness requirement in the while condition rather than a
         //separate if because if we hit one ancestor that's not new, the futher
         //ones won't be either
@@ -407,14 +406,14 @@ export class ContractInstanceDecoder {
   //input is similar to watchMappingKey; will unwatch all descendants too
   public unwatchMappingKey(variable: number | string, ...indices: any[]): void {
     this.checkAllocationSuccess();
-    let slot: Storage.Slot | undefined = this.constructSlot(variable, ...indices)[0];
+    let slot: Storage.Types.Slot | undefined = this.constructSlot(variable, ...indices)[0];
     if(slot === undefined) {
       return; //not strictly necessary, but may as well
     }
     //remove mapping key and all descendants
     this.mappingKeys = this.mappingKeys.filter( existingSlot => {
       while(existingSlot !== undefined) {
-        if(equalSlots(existingSlot, slot)) {
+        if(Storage.Utils.equalSlots(existingSlot, slot)) {
           return false; //if it matches, remove it
         }
         existingSlot = existingSlot.path;
@@ -463,7 +462,7 @@ export class ContractInstanceDecoder {
   //bytes mapping keys should be given as hex strings beginning with "0x"
   //address mapping keys are like bytes; checksum case is not required
   //boolean mapping keys may be given either as booleans, or as string "true" or "false"
-  private constructSlot(variable: number | string, ...indices: any[]): [Storage.Slot | undefined , Ast.AstNode | undefined] {
+  private constructSlot(variable: number | string, ...indices: any[]): [Storage.Types.Slot | undefined , Ast.AstNode | undefined] {
     //base case: we need to locate the variable and its definition
     if(indices.length === 0) {
       let allocation = this.findVariableByNameOrId(variable);
@@ -485,7 +484,7 @@ export class ContractInstanceDecoder {
     let rawIndex = indices[indices.length - 1];
     let index: any;
     let key: Values.ElementaryValue;
-    let slot: Storage.Slot;
+    let slot: Storage.Types.Slot;
     let definition: Ast.AstNode;
     switch(DefinitionUtils.typeClass(parentDefinition)) {
       case "array":
@@ -497,7 +496,7 @@ export class ContractInstanceDecoder {
         }
         definition = parentDefinition.baseType || parentDefinition.typeName.baseType;
         let size = storageSize(definition, this.referenceDeclarations, this.allocations.storage);
-        if(!isWordsLength(size)) {
+        if(!Storage.Utils.isWordsLength(size)) {
           return [undefined, undefined];
         }
         slot = {
