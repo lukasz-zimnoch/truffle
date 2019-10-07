@@ -1,4 +1,4 @@
-var command = {
+const command = {
   command: "opcode",
   description: "Print the compiled opcodes for a given contract",
   builder: {
@@ -18,21 +18,20 @@ var command = {
     ]
   },
   run: function(options, done) {
-    var Config = require("@truffle/config");
-    var TruffleError = require("@truffle/error");
-    var Contracts = require("@truffle/workflow-compile");
-    var CodeUtils = require("@truffle/code-utils");
+    const Config = require("@truffle/config");
+    const TruffleError = require("@truffle/error");
+    const Contracts = require("@truffle/workflow-compile");
+    const CodeUtils = require("@truffle/code-utils");
 
     if (options._.length === 0) {
       return done(new TruffleError("Please specify a contract name."));
     }
 
-    var config = Config.detect(options);
-    Contracts.compile(config, function(err) {
-      if (err) return done(err);
-
-      var contractName = options._[0];
-      var Contract;
+    const config = Config.detect(options);
+    Contracts.compile(config);
+    then(() => {
+      const contractName = options._[0];
+      let Contract;
       try {
         Contract = config.resolver.require(contractName);
       } catch (e) {
@@ -43,20 +42,20 @@ var command = {
         );
       }
 
-      var bytecode = Contract.deployedBytecode;
-      var numInstructions = Contract.deployedSourceMap.split(";").length;
+      let bytecode = Contract.deployedBytecode;
+      let numInstructions = Contract.deployedSourceMap.split(";").length;
 
       if (options.creation) {
         bytecode = Contract.bytecode;
         numInstructions = Contract.sourceMap.split(";").length;
       }
 
-      var opcodes = CodeUtils.parseCode(bytecode, numInstructions);
+      const opcodes = CodeUtils.parseCode(bytecode, numInstructions);
 
-      var indexLength = (opcodes.length + "").length;
+      const indexLength = (opcodes.length + "").length;
 
-      opcodes.forEach(function(opcode, index) {
-        var strIndex = index + ":";
+      opcodes.forEach((opcode, index) => {
+        let strIndex = index + ":";
 
         while (strIndex.length < indexLength + 1) {
           strIndex += " ";
@@ -66,7 +65,7 @@ var command = {
           strIndex + " " + opcode.name + " " + (opcode.pushData || "")
         );
       });
-    });
+    }).catch(done);
   }
 };
 
