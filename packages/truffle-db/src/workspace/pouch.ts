@@ -12,10 +12,10 @@ type PouchApi = {
   contracts?: PouchDB.Database,
   contractInstances?: PouchDB.Database,
   networks?: PouchDB.Database
-}
+};
 
 type TDBResource = keyof PouchApi
-
+type ITDBResourceCollection = DataModel.IWorkspaceQuery[keyof Pick<DataModel.IWorkspaceQuery, TDBResource>];
 
 const resources = {
   contracts: {
@@ -63,7 +63,7 @@ export class Workspace {
 
     for (let resource of Object.keys(resources)) {
       this.dbApi[resource] = new PouchDB(resource, { adapter: "memory" });
-      this[resource] = function() { return this.fetchAll(resource) }
+      this[resource] = function(): ITDBResourceCollection { return this.fetchAll(resource) }
     }
 
     this.ready = this.initialize();
@@ -154,7 +154,7 @@ export class Workspace {
     }
   }
 
-  async fetchAll(res: TDBResource) {
+  async fetchAll(res: TDBResource): Promise<ITDBResourceCollection> {
     await this.ready;
 
     try {
