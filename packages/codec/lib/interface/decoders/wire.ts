@@ -1,8 +1,11 @@
 import debugModule from "debug";
 const debug = debugModule("codec:interface:decoders:wire");
 
-import * as CodecUtils from "@truffle/codec/utils";
-import { AbiUtils, ContextUtils, abifyCalldataDecoding, abifyLogDecoding, MakeType } from "@truffle/codec/utils";
+import * as ConversionUtils from "@truffle/codec/utils/conversion";
+import * as AbiUtils from "@truffle/codec/utils/abi";
+import * as ContextUtils from "@truffle/codec/utils/contexts";
+import * as MakeType from "@truffle/codec/utils/maketype";
+import { abifyCalldataDecoding, abifyLogDecoding } from "@truffle/codec/utils/abify";;
 import * as Utils from "@truffle/codec/utils/interface";
 import * as Ast from "@truffle/codec/ast/types";
 import * as Contexts from "@truffle/codec/contexts/types";
@@ -134,7 +137,7 @@ export default class WireDecoder {
       return this.codeCache[block][address];
     }
     //otherwise, get it, cache it, and return it
-    let code = CodecUtils.Conversion.toBytes(
+    let code = ConversionUtils.toBytes(
       await this.web3.eth.getCode(
         address,
         block
@@ -150,7 +153,7 @@ export default class WireDecoder {
     const block = transaction.blockNumber;
     const context = await this.getContextByAddress(transaction.to, block, transaction.input, additionalContexts);
 
-    const data = CodecUtils.Conversion.toBytes(transaction.input);
+    const data = ConversionUtils.toBytes(transaction.input);
     const info: Evm.Types.EvmInfo = {
       state: {
         storage: {},
@@ -188,8 +191,8 @@ export default class WireDecoder {
   //NOTE: additionalContexts parameter is for internal use only.
   public async decodeLog(log: Log, options: DecoderTypes.EventOptions = {}, additionalContexts: Contexts.DecoderContexts = {}): Promise<DecoderTypes.DecodedLog> {
     const block = log.blockNumber;
-    const data = CodecUtils.Conversion.toBytes(log.data);
-    const topics = log.topics.map(CodecUtils.Conversion.toBytes);
+    const data = ConversionUtils.toBytes(log.data);
+    const topics = log.topics.map(ConversionUtils.toBytes);
     const info: Evm.Types.EvmInfo = {
       state: {
         storage: {},
@@ -269,7 +272,7 @@ export default class WireDecoder {
   private async getContextByAddress(address: string, block: number, constructorBinary?: string, additionalContexts: Contexts.DecoderContexts = {}): Promise<Contexts.DecoderContext | null> {
     let code: string;
     if(address !== null) {
-      code = CodecUtils.Conversion.toHexString(
+      code = ConversionUtils.toHexString(
         await this.getCode(address, block)
       );
     }

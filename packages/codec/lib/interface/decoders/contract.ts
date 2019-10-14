@@ -1,8 +1,12 @@
 import debugModule from "debug";
 const debug = debugModule("codec:interface:decoders:contract");
 
-import * as CodecUtils from "@truffle/codec/utils";
-import { wrapElementaryViaDefinition, Definition as DefinitionUtils, AbiUtils, EVM, ContextUtils } from "@truffle/codec/utils";
+import * as AbiUtils from "@truffle/codec/utils/abi";
+import * as ContextUtils from "@truffle/codec/utils/contexts";
+import * as ConversionUtils from "@truffle/codec/utils/conversion";
+import * as EvmUtils from "@truffle/codec/utils/evm";
+import * as DefinitionUtils from "@truffle/codec/utils/definition";
+import { wrapElementaryViaDefinition } from "@truffle/codec/utils/wrap";
 import * as Utils from "@truffle/codec/utils/interface";
 import * as Storage from "@truffle/codec/storage";
 import * as Ast from "@truffle/codec/ast/types";
@@ -198,7 +202,7 @@ export class ContractInstanceDecoder {
   }
 
   public async init(): Promise<void> {
-    this.contractCode = CodecUtils.Conversion.toHexString(
+    this.contractCode = ConversionUtils.toHexString(
       await this.getCode(this.contractAddress, await this.web3.eth.getBlockNumber())
     );
 
@@ -364,13 +368,13 @@ export class ContractInstanceDecoder {
       return this.storageCache[block][address][slot.toString()];
     }
     //otherwise, get it, cache it, and return it
-    let word = CodecUtils.Conversion.toBytes(
+    let word = ConversionUtils.toBytes(
       await this.web3.eth.getStorageAt(
         address,
         slot,
         block
       ),
-      CodecUtils.EVM.WORD_SIZE
+      EvmUtils.WORD_SIZE
     );
     this.storageCache[block][address][slot.toString()] = word;
     return word;
