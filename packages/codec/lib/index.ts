@@ -30,7 +30,13 @@ export { encodeMappingKey } from "./encode/key";
 
 //now: what types should we export? (other than the ones from ./format)
 //public-facing types for the interface
-export { ContractState, DecodedVariable, DecodedTransaction, DecodedLog, EventOptions } from "./types/interface";
+export {
+  ContractState,
+  DecodedVariable,
+  DecodedTransaction,
+  DecodedLog,
+  EventOptions
+} from "./types/interface";
 export * from "./types/decoding"; //all the decoding result types
 export * from "./types/errors"; //the various errors we might throw
 
@@ -38,7 +44,11 @@ export * from "./types/errors"; //the various errors we might throw
 export { AstDefinition, AstReferences } from "./types/ast";
 export { DataPointer } from "./types/pointer";
 export { EvmInfo } from "./types/evm";
-export { StorageAllocations, AbiAllocations, MemoryAllocations } from "./types/allocation";
+export {
+  StorageAllocations,
+  AbiAllocations,
+  MemoryAllocations
+} from "./types/allocation";
 export { StorageLength } from "./types/storage";
 //and for those who want *all* the types...
 import * as InternalTypes from "./types";

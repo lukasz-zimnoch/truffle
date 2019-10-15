@@ -3,15 +3,20 @@ import Big from "big.js";
 import { Types } from "./types";
 
 export namespace Elementary {
-
   //note that we often want an elementary *value*, and not an error!
   //so let's define those types too
-  export type ElementaryValue = UintValue | IntValue | BoolValue
-    | BytesValue | AddressValue | StringValue | FixedValue | UfixedValue;
+  export type ElementaryValue =
+    | UintValue
+    | IntValue
+    | BoolValue
+    | BytesValue
+    | AddressValue
+    | StringValue
+    | FixedValue
+    | UfixedValue;
   //we don't include FixedValue or UfixedValue because those
   //aren't implemented yet
   export type BytesValue = BytesStaticValue | BytesDynamicValue;
-
 
   //Uints
   export interface UintValue {
@@ -68,7 +73,7 @@ export namespace Elementary {
     value: {
       asAddress: string; //should have 0x and be checksum-cased
       rawAsHex?: string;
-    }
+    };
   }
 
   //strings
@@ -112,5 +117,4 @@ export namespace Elementary {
       rawAsBig?: Big;
     };
   }
-
 }

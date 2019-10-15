@@ -31,7 +31,7 @@ export interface DecodedLog extends Log {
 
 export interface ContractMapping {
   [nodeId: number]: ContractObject;
-};
+}
 
 export interface StorageCache {
   [block: number]: {
