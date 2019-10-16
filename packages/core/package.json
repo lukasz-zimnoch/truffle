@@ -53,6 +53,7 @@
     "hdkey": "^1.1.0",
     "mkdirp": "^0.5.1",
     "mocha": "5.2.0",
+    "mocha-parallel-tests": "^2.2.2",
     "node-emoji": "^1.8.1",
     "node-ipc": "^9.1.1",
     "original-require": "1.0.1",

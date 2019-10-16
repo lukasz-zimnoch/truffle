@@ -1,4 +1,4 @@
-const Mocha = require("mocha");
+const Mocha = require("mocha-parallel-tests");
 const chai = require("chai");
 const path = require("path");
 const Web3 = require("web3");
